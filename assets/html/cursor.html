@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Stylischer Cursor</title>
+  <style>
+    :root{
+      --bg1:#0b1020;
+      --bg2:#060815;
+      --text:#cbd5e1;
+      --accent1:#7c3aed;
+      --accent2:#22d3ee;
+      --accent3:#f472b6;
+    }
+
+    html,body{
+      height:100%;
+      margin:0;
+
+      color:var(--text);
+      font: 16px/1.4 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      overflow:hidden;
+      cursor:none; 
+    }
+
+    .wrap{
+      height:100%;
+      display:grid;
+      place-items:center;
+      padding:32px;
+      text-align:center;
+      user-select:none;
+    }
+
+    h1{
+      margin:0 0 10px;
+      font-size: clamp(24px, 3.2vw, 44px);
+      letter-spacing:.02em;
+    }
+    p{
+      margin:0;
+      opacity:.85;
+      max-width: 62ch;
+    }
+    .chip{
+      margin-top:18px;
+      display:inline-flex;
+      gap:10px;
+      align-items:center;
+      padding:10px 14px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 40px rgba(0,0,0,.35);
+      font-size: 14px;
+      opacity:.95;
+    }
+    .dot{
+      width:10px;height:10px;border-radius:50%;
+      box-shadow: 0 0 22px rgba(34,211,238,.45);
+    }
+
+    .cursor-layer{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      z-index:9999;
+    }
+
+    .cursor-ring{
+      position:absolute;
+      width:46px;height:46px;
+      left:0;top:0;
+      transform: translate(-50%,-50%);
+      border-radius:50%;
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow:
+        0 0 28px rgba(124,58,237,.25),
+        0 0 40px rgba(34,211,238,.18);
+      filter: saturate(1.1);
+      transition:
+        width .18s ease, height .18s ease,
+        border-color .18s ease,
+        filter .18s ease;
+      mix-blend-mode: screen;
+    }
+
+    .cursor-core{
+      position:absolute;
+      width:10px;height:10px;
+      left:0;top:0;
+      transform: translate(-50%,-50%);
+      border-radius:50%;
+      background: black;
+      box-shadow:
+        0 0 14px rgba(34,211,238,.55),
+        0 0 18px rgba(124,58,237,.35);
+    }
+
+    .is-hover .cursor-ring{
+      width:66px;height:66px;
+      border-color: rgba(255,255,255,.18);
+      filter: saturate(1.25) contrast(1.05);
+    }
+    .is-down .cursor-ring{
+      width:34px;height:34px;
+    }
+    .is-down .cursor-core{
+      width:8px;height:8px;
+    }
+
+    .trail{
+      position:absolute;
+      left:0;top:0;
+      width:10px;height:10px;
+      border-radius:50%;
+      transform: translate(-50%,-50%);
+      opacity:0;
+      will-change: transform, opacity;
+      mix-blend-mode: screen;
+      filter: blur(.2px);
+    }
+
+    .actions{
+      margin-top:26px;
+      display:flex;
+      gap:12px;
+      justify-content:center;
+      flex-wrap:wrap;
+    }
+    .btn{
+      cursor:none;
+      padding:10px 14px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 14px 50px rgba(0,0,0,.35);
+      transition: transform .15s ease, background .15s ease, border-color .15s ease;
+    }
+    .btn:hover{
+      transform: translateY(-2px);
+      background: rgba(255,255,255,.09);
+      border-color: rgba(255,255,255,.22);
+    }
+    .btn:active{
+      transform: translateY(0px);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+
+  <div class="cursor-layer" id="cursorLayer">
+    <div class="cursor-ring" id="cursorRing"></div>
+    <div class="cursor-core" id="cursorCore"></div>
+  </div>
+
+  <script>
+    (() => {
+      const layer = document.getElementById("cursorLayer");
+      const ring  = document.getElementById("cursorRing");
+      const core  = document.getElementById("cursorCore");
+
+      let mx = innerWidth / 2, my = innerHeight / 2;
+      let rx = mx, ry = my; // ring
+      let cx = mx, cy = my; // core
+
+      const ringLerp = 0.14;
+      const coreLerp = 0.28;
+
+      const TRAIL_COUNT = 26;
+      const trail = [];
+      let trailIndex = 0;
+
+      function makeTrailDot(i){
+        const el = document.createElement("div");
+        el.className = "trail";
+        const hue = (i * 11) % 360;
+        el.style.background = `radial-gradient(circle at 30% 30%,
+          hsla(${hue}, 95%, 70%, .9),
+          hsla(${(hue+40)%360}, 95%, 60%, .35) 55%,
+          transparent 72%)`;
+        el.style.boxShadow = `0 0 18px hsla(${hue}, 95%, 65%, .25)`;
+        layer.appendChild(el);
+        return { el, life: 0, x: mx, y: my };
+      }
+
+      for (let i=0;i<TRAIL_COUNT;i++) trail.push(makeTrailDot(i));
+
+      // Mouse events
+      window.addEventListener("mousemove", (e) => {
+        mx = e.clientX;
+        my = e.clientY;
+
+        const t = trail[trailIndex];
+        trailIndex = (trailIndex + 1) % TRAIL_COUNT;
+
+        t.x = mx; t.y = my;
+        t.life = 1; // reset
+      }, { passive: true });
+
+      window.addEventListener("mousedown", () => document.documentElement.classList.add("is-down"));
+      window.addEventListener("mouseup",   () => document.documentElement.classList.remove("is-down"));
+
+      const hoverables = "a, button, [role='button'], input, select, textarea, label";
+      document.addEventListener("mouseover", (e) => {
+        if (e.target && e.target.closest && e.target.closest(hoverables)) {
+          document.documentElement.classList.add("is-hover");
+        }
+      });
+      document.addEventListener("mouseout", (e) => {
+        if (e.target && e.target.closest && e.target.closest(hoverables)) {
+          document.documentElement.classList.remove("is-hover");
+        }
+      });
+
+      function tick(){
+        rx += (mx - rx) * ringLerp;
+        ry += (my - ry) * ringLerp;
+
+        cx += (mx - cx) * coreLerp;
+        cy += (my - cy) * coreLerp;
+
+        ring.style.left = rx + "px";
+        ring.style.top  = ry + "px";
+        core.style.left = cx + "px";
+        core.style.top  = cy + "px";
+
+        for (let i=0;i<TRAIL_COUNT;i++){
+          const t = trail[i];
+          if (t.life <= 0.001) {
+            t.el.style.opacity = "0";
+            continue;
+          }
+          t.life *= 0.90; 
+          const s = 0.35 + t.life * 0.9; 
+          t.el.style.opacity = String(Math.min(0.9, t.life));
+          t.el.style.transform = `translate(${t.x}px, ${t.y}px) translate(-50%,-50%) scale(${s})`;
+        }
+
+        requestAnimationFrame(tick);
+      }
+      tick();
+
+      const isTouch = matchMedia("(pointer: coarse)").matches;
+      if (isTouch) layer.style.display = "none";
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<svg viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <defs>
+    <filter id="rough" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="0.6" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+
+  <g stroke="#fff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" filter="url(#rough)">
+    <!-- Left { -->
+    <path d="M120,25 C 90,25 85,42 85,60 C 85,82 65,92 50,100 C 65,108 85,118 85,140 C 85,158 90,175 120,175" />
+    <path d="M125,25 C 95,25 90,42 90,60 C 90,82 70,92 55,100 C 70,108 90,118 90,140 C 90,158 95,175 125,175" opacity=".7"/>
+
+    <!-- Right } -->
+    <path d="M480,25 C 510,25 515,42 515,60 C 515,82 535,92 550,100 C 535,108 515,118 515,140 C 515,158 510,175 480,175" />
+    <path d="M475,25 C 505,25 510,42 510,60 C 510,82 530,92 545,100 C 530,108 510,118 510,140 C 510,158 505,175 475,175" opacity=".7"/>
+
+    <!-- </> CENTERED -->
+    <!-- < -->
+    <path d="M250,70 L220,100 L250,130" />
+    <path d="M254,70 L224,100 L254,130" opacity=".7"/>
+
+    <!-- / -->
+    <path d="M275,130 L305,70" />
+    <path d="M279,130 L309,70" opacity=".7"/>
+
+    <!-- > -->
+    <path d="M330,70 L360,100 L330,130" />
+    <path d="M326,70 L356,100 L326,130" opacity=".7"/>
+  </g>
+</svg>

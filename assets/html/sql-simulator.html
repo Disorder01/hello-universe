@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Simple SQL Database Simulator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    :root {
+      --bg: #858585;
+      --text: #111827;
+      --subtext: #000000;
+      --card-bg: #868686;
+      --border: #cbd2e1;
+      --shadow: 0 2px 6px rgba(0,0,0,0.06);
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --info-bg: #e0f2fe;
+      --info-text: #082f49;
+      --error-bg: #fee2e2;
+      --error-text: #7f1d1d;
+      --table-header-bg: #f3f4f6;
+      --code-bg: #0b1020;
+      --code-text: #e5e7eb;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    h1 {
+      margin-top: 0;
+      margin-bottom: 4px;
+      font-size: 1.6rem;
+    }
+
+    .subtitle {
+      margin-top: 0;
+      margin-bottom: 16px;
+      color: var(--subtext);
+      font-size: 0.9rem;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 10px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      transition: background 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .card h2 {
+      margin-top: 0;
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      padding: 8px;
+      font-family: "Fira Code", monospace;
+      resize: vertical;
+      font-size: 0.9rem;
+      background: transparent;
+      color: var(--text);
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 8px;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 8px 16px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      background: var(--accent);
+      color: white;
+      font-weight: 500;
+      transition: background 0.15s ease, transform 0.05s ease;
+    }
+
+    button:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(148, 163, 184, 0.2);
+    }
+
+    .hint {
+      font-size: 0.8rem;
+      color: var(--subtext);
+    }
+
+    pre.samples {
+      background: var(--code-bg);
+      color: var(--code-text);
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 0.8rem;
+      overflow-x: auto;
+      margin: 0;
+      white-space: pre;
+      border: 1px solid #111827;
+    }
+
+    .message {
+      margin-top: 8px;
+      font-size: 0.85rem;
+      padding: 6px 10px;
+      border-radius: 6px;
+    }
+
+    .message.info {
+      background: var(--info-bg);
+      color: var(--info-text);
+    }
+
+    .message.error {
+      background: var(--error-bg);
+      color: var(--error-text);
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 8px;
+      font-size: 0.85rem;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 6px 8px;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    th {
+      background: var(--table-header-bg);
+      font-weight: 600;
+    }
+
+    .keyword-list {
+      list-style: none;
+      padding-left: 0;
+      margin: 0;
+      font-size: 0.85rem;
+    }
+
+    .keyword-list li {
+      margin-bottom: 4px;
+    }
+
+    .keyword {
+      font-weight: 600;
+    }
+
+    .table-title {
+      font-size: 0.95rem;
+      margin-top: 0;
+      margin-bottom: 2px;
+      font-weight: 600;
+    }
+
+    .empty-hint {
+      font-size: 0.85rem;
+      color: var(--subtext);
+      margin-top: 4px;
+    }
+
+    code {
+      font-size: 0.85em;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <div>
+        <h1>SQL Simulator</h1>
+
+      </div>
+    </div>
+
+    <div class="layout">
+      <div class="card">
+        <h2>SQL input</h2>
+        <textarea id="sql-input">
+CREATE TABLE users (id, name, age);
+INSERT INTO users (id, name, age) VALUES (1, 'Max Mustermann', 30);
+INSERT INTO users (id, name, age) VALUES (2, 'Bob', 25);
+UPDATE users SET age = 26 WHERE name = 'Bob';
+SELECT * FROM users;
+        </textarea>
+        <div class="controls">
+        </div>
+        <p class="hint">
+          Supported: <code>CREATE TABLE</code>, <code>INSERT INTO</code>, <code>SELECT</code>, <code>UPDATE</code>, <code>DELETE</code>.
+        </p>
+
+      </div>
+
+      <div class="card">
+        <h2>Example commands</h2>
+        <pre class="samples" id="samples">
+CREATE TABLE users (id, name, age);
+INSERT INTO users (id, name, age) VALUES (1, 'Max Mustermann', 30);
+SELECT * FROM users;
+UPDATE users SET age = 31 WHERE id = 1;
+DELETE FROM users WHERE name = 'Max Mustermann';
+        </pre>
+        <h2>Keyword explanations</h2>
+        <ul id="keyword-explanations" class="keyword-list">
+        </ul>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px;">
+      <h2>Table view</h2>
+
+      <div id="table-output" class="table-wrapper"></div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      const sqlInput = document.getElementById("sql-input");
+      const runBtn = document.getElementById("run-btn");
+      const messageBox = document.getElementById("message");
+      const tableOutput = document.getElementById("table-output");
+      const tableHint = document.getElementById("table-hint");
+      const keywordList = document.getElementById("keyword-explanations");
+      const themeToggle = document.getElementById("theme-toggle");
+
+      const db = {};
+
+      const keywordDescriptions = {
+        CREATE: "Creates a new object, for example a table.",
+        TABLE: "Indicates that a table is being defined.",
+        INSERT: "Adds new rows into a table.",
+        INTO: "Specifies the target table for an INSERT.",
+        VALUES: "Introduces the list of values to insert.",
+        SELECT: "Retrieves data from one or more tables.",
+        UPDATE: "Changes existing rows in a table.",
+        SET: "Defines new values for columns in an UPDATE statement.",
+        DELETE: "Removes rows from a table.",
+        FROM: "Specifies the table to read from or delete from.",
+        WHERE: "Filters rows based on a condition."
+      };
+
+      function applyTheme(theme) {
+        if (theme === "dark") {
+          document.body.classList.add("dark");
+          themeToggle.textContent = "Switch to light mode";
+        } else {
+          document.body.classList.remove("dark");
+          themeToggle.textContent = "Switch to dark mode";
+        }
+      }
+
+      function getInitialTheme() {
+        const stored = localStorage.getItem("sql-sim-theme");
+        if (stored === "dark" || stored === "light") return stored;
+        if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+          return "dark";
+        }
+        return "light";
+      }
+
+      let currentTheme = getInitialTheme();
+      applyTheme(currentTheme);
+
+      themeToggle.addEventListener("click", () => {
+        currentTheme = currentTheme === "dark" ? "light" : "dark";
+        localStorage.setItem("sql-sim-theme", currentTheme);
+        applyTheme(currentTheme);
+      });
+
+      function setMessage(text, type = "info") {
+        messageBox.textContent = text;
+        messageBox.className = "message " + type;
+      }
+
+      function normalizeSql(sql) {
+        return sql.trim().replace(/;$/, "");
+      }
+
+      function stripQuotes(str) {
+        const trimmed = String(str).trim();
+        if (
+          (trimmed.startsWith("'") && trimmed.endsWith("'")) ||
+          (trimmed.startsWith('"') && trimmed.endsWith('"'))
+        ) {
+          return trimmed.substring(1, trimmed.length - 1);
+        }
+        return trimmed;
+      }
+
+      function parseWhereClause(whereStr) {
+        if (!whereStr) return null;
+        const match = whereStr.match(/([a-zA-Z_][\w]*)\s*=\s*(.+)/);
+        if (!match) return null;
+        const col = match[1].trim();
+        const val = stripQuotes(match[2]);
+        return { column: col, value: val };
+      }
+
+      function renderTable(tableName) {
+        tableOutput.innerHTML = "";
+
+        if (!tableName || !db[tableName]) {
+          tableHint.textContent = "No table found or not created yet.";
+          return;
+        }
+
+        const tableData = db[tableName];
+        const { columns, rows } = tableData;
+
+        tableHint.textContent = 'Current data in table "' + tableName + '":';
+
+        const title = document.createElement("p");
+        title.className = "table-title";
+        title.textContent = "Table: " + tableName;
+        tableOutput.appendChild(title);
+
+        const tableEl = document.createElement("table");
+        const thead = document.createElement("thead");
+        const headerRow = document.createElement("tr");
+
+        columns.forEach(col => {
+          const th = document.createElement("th");
+          th.textContent = col;
+          headerRow.appendChild(th);
+        });
+        thead.appendChild(headerRow);
+        tableEl.appendChild(thead);
+
+        const tbody = document.createElement("tbody");
+        if (rows.length === 0) {
+          const tr = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = columns.length;
+          td.textContent = "No data available.";
+          tr.appendChild(td);
+          tbody.appendChild(tr);
+        } else {
+          rows.forEach(row => {
+            const tr = document.createElement("tr");
+            columns.forEach(col => {
+              const td = document.createElement("td");
+              td.textContent = row[col] !== undefined ? row[col] : "";
+              tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
+          });
+        }
+
+        tableEl.appendChild(tbody);
+        tableOutput.appendChild(tableEl);
+      }
+
+      function showKeywordExplanations(sql) {
+        keywordList.innerHTML = "";
+        const upperSql = sql.toUpperCase();
+
+        const found = [];
+        Object.keys(keywordDescriptions).forEach(keyword => {
+          const regex = new RegExp("\\b" + keyword + "\\b", "i");
+          if (regex.test(upperSql)) {
+            found.push(keyword);
+          }
+        });
+
+        if (found.length === 0) {
+          const li = document.createElement("li");
+          li.textContent = "No SQL keywords detected yet. Enter a command.";
+          keywordList.appendChild(li);
+          return;
+        }
+
+        found.forEach(k => {
+          const li = document.createElement("li");
+          const span = document.createElement("span");
+          span.className = "keyword";
+          span.textContent = k;
+          li.appendChild(span);
+          li.appendChild(document.createTextNode(": " + keywordDescriptions[k]));
+          keywordList.appendChild(li);
+        });
+      }
+
+      function executeCreateTable(sql) {
+        const match = sql.match(/CREATE\s+TABLE\s+([a-zA-Z_][\w]*)\s*\((.+)\)/i);
+        if (!match) {
+          throw new Error("Could not parse CREATE TABLE. Expected: CREATE TABLE name (column1, column2, ...)");
+        }
+
+        const tableName = match[1];
+        const cols = match[2]
+          .split(",")
+          .map(c => c.trim())
+          .filter(Boolean);
+
+        if (cols.length === 0) {
+          throw new Error("You must specify at least one column.");
+        }
+
+        db[tableName] = {
+          columns: cols,
+          rows: []
+        };
+
+        setMessage('Table "' + tableName + '" has been created.', "info");
+        renderTable(tableName);
+        return tableName;
+      }
+
+      function executeInsert(sql) {
+        const match = sql.match(/INSERT\s+INTO\s+([a-zA-Z_][\w]*)\s*\((.+)\)\s*VALUES\s*\((.+)\)/i);
+        if (!match) {
+          throw new Error("Could not parse INSERT INTO. Expected: INSERT INTO name (col1, ...) VALUES (val1, ...)");
+        }
+
+        const tableName = match[1];
+        const table = db[tableName];
+        if (!table) {
+          throw new Error('Table "' + tableName + '" does not exist.');
+        }
+
+        const cols = match[2]
+          .split(",")
+          .map(c => c.trim())
+          .filter(Boolean);
+
+        const vals = match[3]
+          .split(",")
+          .map(v => stripQuotes(v));
+
+        if (cols.length !== vals.length) {
+          throw new Error("Number of columns and values does not match.");
+        }
+
+        const row = {};
+        table.columns.forEach(col => {
+          row[col] = "";
+        });
+
+        cols.forEach((col, index) => {
+          if (!table.columns.includes(col)) {
+            throw new Error('Column "' + col + '" does not exist in table "' + tableName + '".');
+          }
+          row[col] = vals[index];
+        });
+
+        table.rows.push(row);
+        setMessage("One row has been inserted.", "info");
+        renderTable(tableName);
+        return tableName;
+      }
+
+      function executeSelect(sql) {
+        const match = sql.match(/SELECT\s+(.+)\s+FROM\s+([a-zA-Z_][\w]*)(?:\s+WHERE\s+(.+))?/i);
+        if (!match) {
+          throw new Error("Could not parse SELECT. Expected: SELECT * FROM name [WHERE column = value]");
+        }
+
+        const tableName = match[2];
+        const table = db[tableName];
+        if (!table) {
+          throw new Error('Table "' + tableName + '" does not exist.');
+        }
+
+        const whereClause = parseWhereClause(match[3]);
+        if (whereClause) {
+          const filteredRows = table.rows.filter(row => String(row[whereClause.column]) === whereClause.value);
+          setMessage("SELECT executed. Only rows that match the WHERE condition are shown (table data is unchanged).", "info");
+
+          tableOutput.innerHTML = "";
+          tableHint.textContent = 'Result of SELECT on table "' + tableName + '":';
+
+          const title = document.createElement("p");
+          title.className = "table-title";
+          title.textContent = "Table: " + tableName + " (filtered view)";
+          tableOutput.appendChild(title);
+
+          const tableEl = document.createElement("table");
+          const thead = document.createElement("thead");
+          const headerRow = document.createElement("tr");
+          table.columns.forEach(col => {
+            const th = document.createElement("th");
+            th.textContent = col;
+            headerRow.appendChild(th);
+          });
+          thead.appendChild(headerRow);
+          tableEl.appendChild(thead);
+
+          const tbody = document.createElement("tbody");
+          if (filteredRows.length === 0) {
+            const tr = document.createElement("tr");
+            const td = document.createElement("td");
+            td.colSpan = table.columns.length;
+            td.textContent = "No rows match the WHERE condition.";
+            tr.appendChild(td);
+            tbody.appendChild(tr);
+          } else {
+            filteredRows.forEach(row => {
+              const tr = document.createElement("tr");
+              table.columns.forEach(col => {
+                const td = document.createElement("td");
+                td.textContent = row[col] !== undefined ? row[col] : "";
+                tr.appendChild(td);
+              });
+              tbody.appendChild(tr);
+            });
+          }
+          tableEl.appendChild(tbody);
+          tableOutput.appendChild(tableEl);
+        } else {
+          setMessage("SELECT executed. The whole table is shown.", "info");
+          renderTable(tableName);
+        }
+
+        return tableName;
+      }
+
+      function executeUpdate(sql) {
+        const match = sql.match(/UPDATE\s+([a-zA-Z_][\w]*)\s+SET\s+(.+?)(?:\s+WHERE\s+(.+))?$/i);
+        if (!match) {
+          throw new Error("Could not parse UPDATE. Expected: UPDATE name SET column = value [WHERE column = value]");
+        }
+
+        const tableName = match[1];
+        const table = db[tableName];
+        if (!table) {
+          throw new Error('Table "' + tableName + '" does not exist.');
+        }
+
+        const setPart = match[2];
+        const whereClause = parseWhereClause(match[3]);
+
+        const assignments = setPart.split(",").map(x => x.trim()).filter(Boolean);
+        const updates = {};
+        assignments.forEach(assign => {
+          const m = assign.match(/([a-zA-Z_][\w]*)\s*=\s*(.+)/);
+          if (!m) {
+            throw new Error("Could not parse SET part. Expected: column = value");
+          }
+          const col = m[1].trim();
+          const val = stripQuotes(m[2]);
+          if (!table.columns.includes(col)) {
+            throw new Error('Column "' + col + '" does not exist in table "' + tableName + '".');
+          }
+          updates[col] = val;
+        });
+
+        let affected = 0;
+        table.rows.forEach(row => {
+          if (!whereClause || String(row[whereClause.column]) === whereClause.value) {
+            Object.keys(updates).forEach(col => {
+              row[col] = updates[col];
+            });
+            affected++;
+          }
+        });
+
+        setMessage("UPDATE executed. Rows affected: " + affected + ".", "info");
+        renderTable(tableName);
+        return tableName;
+      }
+
+      function executeDelete(sql) {
+        const match = sql.match(/DELETE\s+FROM\s+([a-zA-Z_][\w]*)(?:\s+WHERE\s+(.+))?$/i);
+        if (!match) {
+          throw new Error("Could not parse DELETE. Expected: DELETE FROM name [WHERE column = value]");
+        }
+
+        const tableName = match[1];
+        const table = db[tableName];
+        if (!table) {
+          throw new Error('Table "' + tableName + '" does not exist.');
+        }
+
+        const whereClause = parseWhereClause(match[2]);
+
+        if (!whereClause) {
+          const count = table.rows.length;
+          table.rows = [];
+          setMessage("DELETE without WHERE condition: " + count + " rows deleted.", "error");
+          renderTable(tableName);
+          return tableName;
+        }
+
+        const oldRows = table.rows;
+        const remaining = oldRows.filter(row => String(row[whereClause.column]) !== whereClause.value);
+        const deleted = oldRows.length - remaining.length;
+        table.rows = remaining;
+
+        setMessage("DELETE with WHERE executed. Rows deleted: " + deleted + ".", "info");
+        renderTable(tableName);
+        return tableName;
+      }
+
+      function executeSql(sqlRaw) {
+        const sql = normalizeSql(sqlRaw);
+        if (!sql) {
+          setMessage("Please enter a SQL command.", "error");
+          return;
+        }
+
+        const upper = sql.toUpperCase();
+
+        try {
+          if (upper.startsWith("CREATE TABLE")) {
+            executeCreateTable(sql);
+          } else if (upper.startsWith("INSERT INTO")) {
+            executeInsert(sql);
+          } else if (upper.startsWith("SELECT")) {
+            executeSelect(sql);
+          } else if (upper.startsWith("UPDATE")) {
+            executeUpdate(sql);
+          } else if (upper.startsWith("DELETE FROM")) {
+            executeDelete(sql);
+          } else {
+            throw new Error("Command not supported. Please use CREATE TABLE, INSERT INTO, SELECT, UPDATE, or DELETE.");
+          }
+
+          showKeywordExplanations(sql);
+        } catch (err) {
+          setMessage(err.message, "error");
+          showKeywordExplanations(sql);
+        }
+      }
+
+      runBtn.addEventListener("click", () => {
+        executeSql(sqlInput.value);
+      });
+
+      sqlInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+          e.preventDefault();
+          executeSql(sqlInput.value);
+        }
+      });
+
+      showKeywordExplanations(sqlInput.value);
+    })();
+  </script>
+</body>
+</html>
