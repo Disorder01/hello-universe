@@ -46,7 +46,8 @@
             "resume-topics-inventory": "Inventory Control",
             "resume-topics-storage": "Storage of Goods",
             "resume-topics-goods": "Goods Receipt",
-            "resume-topics-order": "Order Picking & Packaging"
+            "resume-topics-order": "Order Picking & Packaging",
+            "resume-apprenticeship": "Apprenticeship"
         },
         "projects": {
             "projects-head": "My Projects",
@@ -121,7 +122,8 @@
             "resume-topics-inventory": "Bestandskontrolle",
             "resume-topics-storage": "Einlagerung von Waren",
             "resume-topics-goods": "Warenannahme",
-            "resume-topics-order": "Kommissionierung & Verpackung"
+            "resume-topics-order": "Kommissionierung & Verpackung",
+            "resume-apprenticeship": "Ausbildung"
         },
         "projects": {
             "projects-head": "My Projects",
