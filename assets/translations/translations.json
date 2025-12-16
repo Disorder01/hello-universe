@@ -4,7 +4,8 @@
             "home": "Home",
             "resume": "CV",
             "projects": "Projects",
-            "hobbies": "Hobbies"
+            "hobbies": "Hobbies",
+            "explore": "Explore"
         },
         "home": {
             "job": "Software Developer",
@@ -63,7 +64,7 @@
             "astro-p": "The infinite vastness of the universe holds countless wonders waiting to be disovered.",
             "astro-p2": "Astronomy is a fascinating hobby, especially because you can observe the planets of our solar system with your own eyes through a telescope. This direct view of distant worlds makes stargazing truly exciting. Every clear night brings new discoveries, from nearby planets to distant galaxies, blending science with wonder and curiosity.",
             "gaming-head": "Gaming (for sure)",
-            "gaming-p": "Gaming has long become socially accepted and is now widely recognized as a legitimate hobby. Beyond entertainment, it offers creativity, strategy, and social interaction. Just like in real life, exploring new worlds in games is especially exciting — discovering unknown places, stories, and experiences makes gaming so engaging.",
+            "gaming-p": "Gaming has long become socially accepted and is now widely recognized as a legitimate hobby. Beyond entertainment, it offers creativity, strategy, and social interaction. Just like in real life, exploring new worlds in games is especially exciting. Discovering unknown places, stories, and experiences makes gaming so engaging.",
             "games-list": "My favorite Games",
             "hiking-head": "Hiking is fun... mostly",
             "hiking-p": "Hiking is a hobby I really enjoy, even though Im not the most athletic person. Being out in nature, away from screens and daily routines, feels refreshing. I like exploring new places, enjoying the scenery, and discovering the world step by step at my own pace."
@@ -76,11 +77,7 @@
             "projects": "Projekte",
             "hobbies": "Hobbys",
             "other": "Other",
-            "projects-h": "Take a look at what I've been building",
-            "projects-p": "I created a live demo for some of my projects.",
-            "hobbies-h": "Yes, I do leave my keyboard sometimes",
-            "hobbies-p": "When I'm not staring at error messages, I'm staring at stars",
-            "hobbies-button": "My Hobbies"
+            "explore": "Erkunden"
         },
         "home": {
             "job": "Softwareentwickler",
