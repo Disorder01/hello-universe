@@ -8,6 +8,7 @@
             "explore": "Explore"
         },
         "home": {
+            "welcome": "Welcome to my personal portfolio",
             "job": "Software Developer",
             "welcome": "Welcome to my personal portfolio",
             "created": "This Page was created all by myself",
@@ -80,6 +81,7 @@
             "explore": "Erkunden"
         },
         "home": {
+            "welcome": "Wilkommen zu meinem persönlichem Portfolio",
             "job": "Softwareentwickler",
             "welcome": "Wilkommen zu meinem persönlichen Portfolio",
             "created": "Diese Webseite wurde vollständig von mir entwickelt",
